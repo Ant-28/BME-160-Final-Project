@@ -15,7 +15,7 @@ class fungalGenome:
                 'GCTGCGTTCTTCATCGATGG', 'GCTACGTTCTTCATCGATGC', 'GCTGCGTTCTTCATCGATGT',
                 'ACTGTGTTCTTCATCGATGT', 'GCTGCGTTCTTCATCGTTGC', 'GCGTTCTTCATCGATGC']
     ITS2s = [] 
-    pass
+    pass #hi there :)
 
 
 
