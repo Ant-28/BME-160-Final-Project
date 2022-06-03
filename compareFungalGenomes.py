@@ -7,10 +7,42 @@ import Bio
 from Bio import Entrez
 from Bio.Seq import Seq
 from Bio import SeqUtils
+from Bio import Align
 
 # TODO: Download two fungal genomes from NCBI
-import sys
+# todo: explain comments
 
+import sys
+import pdfplumber
+import os
+import statistics
+
+
+class pdfWriter:
+    
+    def __init__(self, inFile = ""):
+        self.file = inFile
+
+    def filterToText(self,outputFile, temp, linesToIgnore = 5):
+        with pdfplumber.open(self.file) as pdf:
+            with open(temp,'w') as tempFile:
+                
+                for page in range(len(pdf.pages)):
+                    
+                    tempFile.write(pdf.pages[page].extract_text())
+
+        with open(temp,'r') as tempFile:
+            with open(outputFile, 'w') as output:
+                for i in range(linesToIgnore):
+                    line = tempFile.readline()
+                while True:
+                    line = tempFile.readline()
+                    if line == "":
+                        break
+                    elif not line.isspace():
+                        output.write(line)
+        if os.path.exists(temp):
+            os.remove(temp)
 
 class FastAreader:
     ''' 
@@ -67,6 +99,8 @@ class FastAreader:
         yield header, sequence
 
 
+
+# Complete this asap
 class genomeDownloader:
     '''Add genome from NCBI'''
     def __init__(self, genome):
@@ -75,18 +109,46 @@ class genomeDownloader:
         with open(filename, "w") as genomeFile:
             pass
 
+
 class fungalGenome(FastAreader):
     
-    
-    ITS1s_forward = ['CTTGGTCATTTAGAGGAAGTAA', 'CTCGGTCATTTAGAGGAAGTAA', 'CTTGGTCATTTAGAGGAACTAA',
+    ITS1sForward = ['TCCGTAGGTGAACCTGCGG','CTTGGTCATTTAGAGGAAGTAA', 'CTCGGTCATTTAGAGGAAGTAA', 'CTTGGTCATTTAGAGGAACTAA',
                 'CCCGGTCATTTAGAGGAAGTAA', 'CTAGGCTATTTAGAGGAAGTAA', 'CTTAGTTATTTAGAGGAAGTAA',
-                'CTACGTCATTTAGAGGAAGTAA', 'CTTGGTCATTTAGAGGTCGTAA', 'TCCGTAGGTGAACCTGCGG', 'CTTGGTCATTTAGAGGAAGTAA'
-                ,'GGAAGTAAAAGTCGTAACAAGG', 'TACGTCCCTGCCCTTTGTAC', 'GTCCCTGCCCTTTGTACACA', 'CTGCCCTTTGTACACACCGC', 'ACACACCGCCCGTCGCTACT']
-    ITS1s_reverse = [ 'GCTGCGTTCTTCATCGATGC','GCTGCGTTCTTCATCGATGG', 'GCTACGTTCTTCATCGATGC',
+                'CTACGTCATTTAGAGGAAGTAA', 'CTTGGTCATTTAGAGGTCGTAA','GCATCGATGAAGAACGC', 'ATCGATGAAGAACGCAG']
+    ITS1sReverse = [ 'GCTGCGTTCTTCATCGATGC','GCTGCGTTCTTCATCGATGG', 'GCTACGTTCTTCATCGATGC',
                      'GCTGCGTTCTTCATCGATGT', 'ACTGTGTTCTTCATCGATGT', 'GCTGCGTTCTTCATCGTTGC',
-                     'GCGTTCTTCATCGATGC', 'GGGCGCAATGTGCGTTCAAA']
-    ITS2s = [] # wat
-    overhangs = ['TCGTCGGCAGCGTCAGATGTGTATAAGAGACAG', 'GTCTCGTGGGCTCGGAGATGTGTATAAGAGACAG']
+                     'GCGTTCTTCATCGATGC', 'GGGCGCAATGTGCGTTCAAA', 'AAACTCTGTCGTGCTGGGGATA','GATTGAATGGCTTAGTGAGG'
+                     ]
+    
+    #overhangs = ['TCGTCGGCAGCGTCAGATGTGTATAAGAGACAG', 'GTCTCGTGGGCTCGGAGATGTGTATAAGAGACAG']
+    
+    def __init__(self,  primerFile = "primers.pdf", linesToIgnore = 5, fname = ""):
+        super().__init__(fname = fname)
+        
+        self.primersGen(primerFile, linesToIgnore)
+        
+     
+    # ITS2s = [] # wat
+    
+    def primersGen(self, primerFile, linesToIgnore):
+        primerPDF = pdfWriter(primerFile)
+    
+        primerPDF.filterToText("primers.txt", "temp.txt", linesToIgnore)
+        
+        with open("primers.txt") as primers:
+            while True:
+                line = primers.readline()
+                if line == "":
+                    break
+                else:
+                    lineList = line.strip().split()
+                    if len(lineList) == 6:
+                        self.ITS1sForward.append(lineList[2])
+                        self.ITS1sReverse.append(lineList[5])
+                    else:
+                        self.ITS1sForward.append(lineList[2])
+                        
+        
     
     def returnChromosome(self, chromosome):
         count = 0
@@ -95,7 +157,7 @@ class fungalGenome(FastAreader):
             if count == chromosome:
                 storeSeq = sequence
             
-        return storeSeq
+        return storeSeq.upper()
             
     def sequenceMatch(self, inSeq, otherSeq):
         match = 0 
@@ -107,31 +169,91 @@ class fungalGenome(FastAreader):
             
         return match/len(inSeq)
     
-    def findChromosome(self):
+    def findITS(self):
         chromsList = []
-        for primer in self.ITS1s_forward:
-            checkSeq = Seq(primer).reverse_complement()
-            chrom = 0
+        chrom = 0
+        for header, sequence in self.readFasta():
+            
+            chrom += 1
+            for primer in self.ITS1sForward:
+                checkSeq = Seq(primer).reverse_complement()
+                
+            
+                
+                sequence = sequence.upper()
+                
+                
+                ITSPos = SeqUtils.nt_search(sequence, str(checkSeq))
+                ITSPos = ITSPos[1:]
+                if ITSPos:
+                    chromsList.append((chrom, ITSPos))
+                        
+                        
+                        
+            for primer in self.ITS1sReverse:
+                
+                checkSeq = str(Seq(primer).reverse_complement())
+                sequence = sequence.upper()
+                newSeq = str(Seq(sequence).reverse_complement())
+                
+                    
+                
+                
+                
+                temp = SeqUtils.nt_search(newSeq, checkSeq)
+                temp = ITSPos[1:]
+                ITSPos = []
+                if temp:
+                    for ITS in temp:
+                        ITSPos.append(len(sequence) - ITS)
+                    chromsList.append((-chrom, ITSPos))        
+            
+                
         
-            for header, sequence in self.readFasta():
-                sequence = sequence.upper()
-                chrom += 1
-                if str(checkSeq) in sequence:
-                    chromsList.append((chrom, sequence.index(str(checkSeq))))
-        for primer in self.ITS1s_reverse:
-            checkSeq = Seq(primer).reverse_complement()
-            chrom = 0
-            newSeq = str(Seq(sequence).reverse_complement())
-            for header, sequence in self.readFasta():
-                
-                sequence = sequence.upper()
-                chrom += 1
-                if str(checkSeq) in newSeq:
-                    chromsList.append((chrom, len(newSeq) - newSeq.index(str(checkSeq))))        
-                
         return chromsList
     
-my_file = fungalGenome('GCA_022626425.1_ASM2262642v1_genomic.fna')
+    
+    def compareGenome(self, other, comparisonLength = 1000):
+        chromsList = self.findITS()
+        if not chromsList:
+            print("Error: No Primers Bound to genome.")
+            return
+        
+        tempChroms = []
+        for potentialITS in chromsList:
+            tempChroms.append(potentialITS[0])
+            
+        chromToUse = statistics.mode(tempChroms)
+        print("ITS Chromosome: ", chromToUse )
+        tempITSIndices = []
+        for potentialITS in chromsList:
+            tempITSIndices.append(potentialITS[1][0])
+        ITSIndex = round(statistics.mean(tempITSIndices))
+        
+        barcode = self.returnChromosome(chromToUse)
+        
+        barcode = barcode[ITSIndex:(ITSIndex + comparisonLength)]
+        try:
+            otherChrom = other.returnChromosome(chromToUse)
+            aligner = Align.PairwiseAligner()
+            aligner.mode = 'local'
+            aligner.match_score = 1
+            aligner.mismatch_score = 0
+            aligner.open_gap_score = -1
+            aligner.extend_gap_score = -0.5
+            
+            alignments = aligner.align(otherChrom, barcode)
+            print(f'Overall match = {alignments.score/comparisonLength * 100.:3f}%')
+            
+            return 
+        except UnboundLocalError:
+            print("Error: Chromosome out of Bounds, genomes cannot be compared")
+            print("Species unlikely to be the same")
+            return
+        
+        
+        
+my_old_file = fungalGenome(fname = 'flavus.fna')
+my_file = fungalGenome(fname = 'asper.fna')
 
-print(my_file.findChromosome())
-
+my_file.compareGenome(my_old_file)
