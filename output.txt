@@ -1,0 +1,30 @@
+Saccharomyces cerevisiae (2014 Reference) vs Saccharomyces cerevisiae (c.1999)
+ITS Chromosome:  12
+Overall match = 100.0%
+Species are the same
+Time taken: 0 minutes and 43 seconds
+
+Saccharomyces cerevisiae (2014 Reference) vs Saccharomyces paradoxus
+ITS Chromosome:  12
+Overall match = 46.7%
+Species are different
+Time taken: 0 minutes and 52 seconds
+
+Saccharomyces cerevisiae (2014 Reference) vs Agaricus bisporus
+ITS Chromosome:  12
+Overall match = 46.1%
+Species are different
+Time taken: 1 minutes and 20 seconds
+
+Saccharomyces cerevisiae (2014 Reference) vs Saccharomyces cerevisiae (c.1999)
+Note: the 2011 Genome also failed to bind to ITS primers
+ITS Chromosome:  12
+Overall match = 45.6%
+Species are different
+Time taken: 1 minutes and 5 seconds
+
+Aspergillus Fumigatus vs Aspergillus Flavus
+ITS Chromosome:  4
+Overall match = 46.0%
+Species are different
+Time taken: 11 minutes and 25 seconds
