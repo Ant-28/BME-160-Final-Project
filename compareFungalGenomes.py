@@ -351,6 +351,11 @@ def main(referenceGenome, genomeToCheck, compLength = 1000):
 if __name__ == "__main__":
     
       # cases tested
+      print("Saccharomyces cerevisiae (2014 Reference) vs Saccharomyces cerevisiae (c.1996)")
+      main("SaccharomycesCerevisiae2014.fna", "SaccharomycesCerevisiae1996.fsa")
+      
+      print()
+      
       print("Saccharomyces cerevisiae (2014 Reference) vs Saccharomyces cerevisiae (c.1999)")
       main("SaccharomycesCerevisiae2014.fna", "SaccharomycesCerevisiae1999.fsa")
      
