@@ -289,8 +289,8 @@ class FungalGenome(FastAreader):
             aligner.mismatch_score = 0
             aligner.open_gap_score = -1
             aligner.extend_gap_score = -0.5
-            
-            alignments = aligner.align(otherChrom, barcode)
+            # aligner is case sensitive
+            alignments = aligner.align(otherChrom.upper(), barcode.upper())
            
             match = alignments.score/comparisonLength
             
