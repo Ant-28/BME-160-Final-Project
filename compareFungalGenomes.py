@@ -371,7 +371,7 @@ if __name__ == "__main__":
      
       print()
      
-      print("Saccharomyces cerevisiae (2014 Reference) vs Saccharomyces cerevisiae (c.1999)")
+      print("Saccharomyces cerevisiae (2014 Reference) vs Saccharomyces cerevisiae (c.2011)")
      
       # note to print
       print("Note: the 2011 Genome also failed to bind to ITS primers")
